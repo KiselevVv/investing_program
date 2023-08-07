@@ -12,21 +12,14 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-<div class="form">
-    {% with message = get_flashed_messages() %}
-    {% if message %}
-    <div class="alert alert-primary" role="alert">
-        {{message[0]}}
-    </div>
-    {% endif %}
-    {% endwith %}
-    <form action="/" method="POST" enctype="multipart/form-data">
-        {{ form.csrf_token }}
-        {{ form.csv_file.label }} {{ form.csv_file() }}
-        {{ form.submit() }}
-    </form>
-</div>
-
-
+  <h1> {{ query.name }} </h1>
+    <table class="table">
+      {% for k, v in values.items() %}
+      <tr class="tr-table">
+        <td class="td-table">{{ k }}</td>
+        <td class="td-table">{{ v }}</td>
+      </tr>
+      {% endfor %}
+    </table>
 </body>
 </html>

@@ -11,8 +11,8 @@ html, body {
 
 .form {
 	margin-top: 15%;
-	padding-left: 10%;
-	padding-right: 10%;
+	padding-left: 20%;
+	padding-right: 30%;
 	text-align: center;
 	font-size: 1vw;
 	margin-bottom: 3%;
@@ -22,7 +22,7 @@ input {
 	border: none;
 	outline: none;
 	height: 3vw;
-	width: 40vw;
+	width: 10vw;
 	padding-left: 0.5vw;
 	box-shadow: 0 0 1vw rgba(0,0,0,0.5);
 }
@@ -42,6 +42,7 @@ input {
 table {
     max-width: 800px;
     margin: 0 auto; /* Центрируем таблицу */
+    margin-top: 15%;
     border-collapse: collapse;
     width: 50%; /* Ширина таблицы */
 }

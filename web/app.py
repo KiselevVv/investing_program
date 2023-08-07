@@ -72,5 +72,31 @@ def companies_page():
     return render_template('companies.html', query=companies_query)
 
 
+def get_formuls(ticker):
+    formuls = {'P/E': Companies.market_price / Companies.net_profit,
+               'P/S': Companies.market_price / Companies.sales,
+               'P/B': Companies.market_price / Companies.assets,
+               'ND/EBITDA': Companies.net_debt / Companies.ebitda,
+               'ROE': Companies.net_profit / Companies.equity,
+               'ROA': Companies.net_profit / Companies.assets,
+               'L/A': Companies.liabilities / Companies.assets}
+    values = {}
+    for k, v in formuls.items():
+        query = db.session.query(v).filter(Companies.ticker == ticker).one()[0]
+        values[k] = query
+        # if query != None:
+        #     values[k] = db.session.query(v).filter(Companies.ticker == ticker_query).one()[0]:.2f}
+        # else:
+        #     print(f'{k} = {db.session.query(v).filter(Companies.ticker == ticker_query).one()[0]}')
+    return values
+
+
+@app.route('/companies/<ticker>', methods=['GET'])
+def company_info_page(ticker):
+    query = Companies.query.filter_by(ticker=ticker).first()
+    if query:
+        return render_template('company_info.html', query=query, values=get_formuls(ticker))
+
+
 if __name__ == '__main__':
     app.run()
