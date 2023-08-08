@@ -22,7 +22,7 @@ input {
 	border: none;
 	outline: none;
 	height: 3vw;
-	width: 10vw;
+	width: 20vw;
 	padding-left: 0.5vw;
 	box-shadow: 0 0 1vw rgba(0,0,0,0.5);
 }
@@ -63,6 +63,9 @@ table {
     width: 30%; /* Ширина столбца Sector */
 }
 
+.pagination {
+    margin: 0 auto;
+}
 
 
 .wrapper {

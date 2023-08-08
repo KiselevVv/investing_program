@@ -12,6 +12,16 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+  <div class="form">
+    <form action="/companies" method="POST">
+        <input type="text" placeholder="Введите название компании" name="comp_name" id="input-comp">
+        <button type="submit" class="submit-button">Поиск</button>
+    </form>
+  {% if search %}
+    <p>Выполнен поиск "{{ search }}"</p>
+    <a href="{{ url_for('companies_page') }}">Сбросить поиск</a>
+  {% endif %}
+  </div>
     <table class="table">
       <tr class="tr-table">
         <th class="th-table ticker">Индекс</th>
@@ -28,12 +38,6 @@
     </table>
     {% if query.pages > 1 %}
   <div class="pagination">
-    {% if query.has_prev %}
-      <a href="{{ url_for('companies_page', page=query.prev_num) }}">Previous</a>
-    {% else %}
-      <span class="disabled">Previous</span>
-    {% endif %}
-
     {% for num in query.iter_pages() %}
       {% if num %}
         {% if num == query.page %}
@@ -45,12 +49,6 @@
         <span class="ellipsis">…</span>
       {% endif %}
     {% endfor %}
-
-    {% if query.has_next %}
-      <a href="{{ url_for('companies_page', page=query.next_num) }}">Next</a>
-    {% else %}
-      <span class="disabled">Next</span>
-    {% endif %}
   </div>
 {% endif %}
 </body>

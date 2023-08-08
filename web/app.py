@@ -1,10 +1,10 @@
 import csv
 import os
 
-from flask import Flask, render_template, flash, url_for
+from flask import Flask, render_template, flash, url_for, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
-from wtforms import FileField, SubmitField
+from wtforms import FileField, SubmitField, StringField, FloatField
 from wtforms.validators import DataRequired
 
 app = Flask(__name__)
@@ -14,7 +14,6 @@ app.config["DEBUG"] = True
 UPLOAD_FOLDER = 'static/files'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 db = SQLAlchemy(app)
-
 
 POSTS_PER_PAGE = 20
 
@@ -40,8 +39,25 @@ with app.app_context():
 
 
 class UploadForm(FlaskForm):
-    csv_file = FileField('CSV File', validators=[DataRequired()])
-    submit = SubmitField('Upload')
+    csv_file = FileField('CSV файл', validators=[DataRequired()])
+    submit = SubmitField('Загрузить')
+
+
+class CreateForm(FlaskForm):
+    ticker = StringField('ticker', validators=[DataRequired()])
+    name = StringField('name', validators=[DataRequired()])
+    sector = StringField('sector', validators=[DataRequired()])
+    ebitda = FloatField('ebitda', validators=[DataRequired()])
+    sales = FloatField('sales', validators=[DataRequired()])
+    net_profit = FloatField('net_profit', validators=[DataRequired()])
+    market_price = FloatField('market_price', validators=[DataRequired()])
+    net_debt = FloatField('net_debt', validators=[DataRequired()])
+    assets = FloatField('assets', validators=[DataRequired()])
+    equity = FloatField('equity', validators=[DataRequired()])
+    cash_equivalents = FloatField('cash_equivalents',
+                                  validators=[DataRequired()])
+    liabilities = FloatField('liabilities', validators=[DataRequired()])
+    submit = SubmitField('Добавить')
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -69,10 +85,23 @@ def index_page():
     return render_template('index.html', form=form)
 
 
-@app.route('/companies', methods=['GET'])
-@app.route('/companies/<int:page>', methods=['GET'])
+# @app.route('/search', methods=['GET', 'POST'])
+# def search_page():
+
+
+@app.route('/companies', methods=['GET', 'POST'])
+@app.route('/companies/<int:page>', methods=['GET', 'POST'])
 def companies_page(page=1):
-    companies_query = db.session.query(Companies).paginate(page=page, per_page=POSTS_PER_PAGE, error_out=False)
+    companies_query = db.session.query(Companies).paginate(page=page,
+                                                           per_page=POSTS_PER_PAGE,
+                                                           error_out=False)
+    if request.method == 'POST':
+        search = request.form.get("comp_name")
+        query = db.session.query(Companies).filter(
+            Companies.name.like(f'%{search}%')).paginate(page=page,
+                                                         per_page=POSTS_PER_PAGE,
+                                                         error_out=False)
+        return render_template('companies.html', search=search, query=query)
     return render_template('companies.html', query=companies_query)
 
 
@@ -99,7 +128,18 @@ def get_formuls(ticker):
 def company_info_page(ticker):
     query = Companies.query.filter_by(ticker=ticker).first()
     if query:
-        return render_template('company_info.html', query=query, values=get_formuls(ticker))
+        return render_template('company_info.html', query=query,
+                               values=get_formuls(ticker))
+
+
+@app.route('/create', methods=['GET', 'POST'])
+def create_comp_page():
+    form = CreateForm()
+    if form.validate_on_submit():
+        db.session.add(Companies(**{k:v for (k,v) in form.data.items() if k != 'submit' and k != 'csrf_token'}))
+        db.session.commit()
+        flash("Компания успешно добавлена")
+    return render_template('create.html', form=form)
 
 
 if __name__ == '__main__':
