@@ -18,13 +18,40 @@
         <th class="th-table name">Имя</th>
         <th class="th-table sector">Область</th>
       </tr>
-      {% for company in query %}
+      {% for company in query.items %}
       <tr class="tr-table">
-        <td class="td-table ticker">{{ company.ticker }}</td>
+        <td class="td-table ticker"><a href="{{ url_for('company_info_page', ticker=company.ticker) }}">{{ company.ticker }}</a></td>
         <td class="td-table name">{{ company.name }}</td>
         <td class="td-table sector">{{ company.sector }}</td>
       </tr>
       {% endfor %}
     </table>
+    {% if query.pages > 1 %}
+  <div class="pagination">
+    {% if query.has_prev %}
+      <a href="{{ url_for('companies_page', page=query.prev_num) }}">Previous</a>
+    {% else %}
+      <span class="disabled">Previous</span>
+    {% endif %}
+
+    {% for num in query.iter_pages() %}
+      {% if num %}
+        {% if num == query.page %}
+          <span class="current">{{ num }}</span>
+        {% else %}
+          <a href="{{ url_for('companies_page', page=num) }}">{{ num }}</a>
+        {% endif %}
+      {% else %}
+        <span class="ellipsis">…</span>
+      {% endif %}
+    {% endfor %}
+
+    {% if query.has_next %}
+      <a href="{{ url_for('companies_page', page=query.next_num) }}">Next</a>
+    {% else %}
+      <span class="disabled">Next</span>
+    {% endif %}
+  </div>
+{% endif %}
 </body>
 </html>

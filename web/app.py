@@ -1,7 +1,7 @@
 import csv
 import os
 
-from flask import Flask, render_template, flash
+from flask import Flask, render_template, flash, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from wtforms import FileField, SubmitField
@@ -14,6 +14,9 @@ app.config["DEBUG"] = True
 UPLOAD_FOLDER = 'static/files'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 db = SQLAlchemy(app)
+
+
+POSTS_PER_PAGE = 20
 
 
 class Companies(db.Model):
@@ -67,8 +70,9 @@ def index_page():
 
 
 @app.route('/companies', methods=['GET'])
-def companies_page():
-    companies_query = db.session.query(Companies).all()
+@app.route('/companies/<int:page>', methods=['GET'])
+def companies_page(page=1):
+    companies_query = db.session.query(Companies).paginate(page=page, per_page=POSTS_PER_PAGE, error_out=False)
     return render_template('companies.html', query=companies_query)
 
 
