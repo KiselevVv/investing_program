@@ -1,7 +1,7 @@
 import csv
 import os
 
-from flask import Flask, render_template, flash, url_for, request
+from flask import Flask, render_template, flash, url_for, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from wtforms import FileField, SubmitField, StringField, FloatField
@@ -124,10 +124,14 @@ def get_formuls(ticker):
     return values
 
 
-@app.route('/companies/<ticker>', methods=['GET'])
+@app.route('/companies/<ticker>', methods=['GET', 'POST'])
 def company_info_page(ticker):
     query = Companies.query.filter_by(ticker=ticker).first()
     if query:
+        if request.method == 'POST':
+            db.session.delete(query)
+            db.session.commit()
+            return redirect('/')
         return render_template('company_info.html', query=query,
                                values=get_formuls(ticker))
 

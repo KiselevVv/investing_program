@@ -12,6 +12,13 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+  <nav>
+    <ul>
+      <li><a href="/">Главная</a></li>
+      <li><a href="/create">Создать компанию</a></li>
+      <li><a href="/companies">Список компаний</a></li>
+    </ul>
+  </nav>
 <div>
     {% with message = get_flashed_messages() %}
     {% if message %}
@@ -20,7 +27,7 @@
     </div>
     {% endif %}
     {% endwith %}
-
+  <div class="form-create">
     <form action="/create" method="POST" enctype="multipart/form-data">
         {{ form.csrf_token }}
         {% for row in form %}
@@ -30,6 +37,7 @@
         {% endfor %}
         {{ form.submit() }}
     </form>
+    </div>
 </div>
 
 

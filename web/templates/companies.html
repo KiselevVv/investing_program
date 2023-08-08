@@ -12,6 +12,13 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+  <nav>
+    <ul>
+      <li><a href="/">Главная</a></li>
+      <li><a href="/create">Создать компанию</a></li>
+      <li><a href="/companies">Список компаний</a></li>
+    </ul>
+  </nav>
   <div class="form">
     <form action="/companies" method="POST">
         <input type="text" placeholder="Введите название компании" name="comp_name" id="input-comp">
