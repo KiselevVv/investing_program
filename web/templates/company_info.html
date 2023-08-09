@@ -18,6 +18,7 @@
       <li><a href="/create">Создать компанию</a></li>
       <li><a href="/update">Обновить компанию</a></li>
       <li><a href="/companies">Список компаний</a></li>
+      <li><a href="/top">Топ компаний</a></li>
     </ul>
   </nav>
   <h1> {{ query.name }} </h1>
@@ -31,7 +32,7 @@
     </div>
     {% endif %}
     {% endwith %}
-    <table class="table">
+    <table class="table-one">
       {% for k, v in values.items() %}
       <tr class="tr-table">
         <td class="td-table">{{ k }}</td>

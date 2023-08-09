@@ -47,7 +47,7 @@ input {
 }
 
 
-table {
+.table-one {
     max-width: 800px;
     margin: 0 auto; /* Центрируем таблицу */
     margin-top: 15%;
@@ -74,6 +74,37 @@ table {
 .pagination {
     margin: 0 auto;
 }
+
+
+  .table-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-top: 100px;
+  }
+  .table-cell {
+    flex: 1;
+    margin: 0 10px;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  th, td {
+    text-align: left;
+    padding: 8px;
+    background-color: #f2f2f2;
+  }
+
+
+  .table-container {
+  margin-top: 20px;
+}
+
+.table-container h2 {
+  margin-bottom: 10px;
+}
+
 
 
 .wrapper {

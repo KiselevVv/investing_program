@@ -4,6 +4,7 @@ import os
 from flask import Flask, render_template, flash, url_for, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
+from sqlalchemy import desc
 from wtforms import FileField, SubmitField, StringField, FloatField, \
     SelectField
 from wtforms.validators import DataRequired
@@ -192,11 +193,25 @@ def update_comp_page(ticker):
     form = UpdateForm()
     query = Companies.query.filter_by(ticker=ticker).first()
     if form.validate_on_submit():
-        Companies.query.filter_by(ticker=ticker).update({k: v for (k, v) in form.data.items() if k != 'submit' and k != 'csrf_token'})
+        Companies.query.filter_by(ticker=ticker).update(
+            {k: v for (k, v) in form.data.items() if
+             k != 'submit' and k != 'csrf_token'})
         db.session.commit()
         flash("Компания успешно обновлена")
-    return render_template('update.html', form=form, ticker=ticker, query=query)
+    return render_template('update.html', form=form, ticker=ticker,
+                           query=query)
 
+
+@app.route('/top', methods=['GET'])
+def top_comp_page():
+    query_nd_ebitda = db.session.query(Companies).order_by(
+        desc(Companies.net_debt / Companies.ebitda)).limit(10).all()
+    query_roe = db.session.query(Companies).order_by(
+        desc(Companies.net_profit / Companies.equity)).limit(10).all()
+    query_roa = db.session.query(Companies).order_by(
+        desc(Companies.net_profit / Companies.assets)).limit(10).all()
+    return render_template('top.html', query_nd_ebitda=query_nd_ebitda,
+                           query_roe=query_roe, query_roa=query_roa)
 
 
 if __name__ == '__main__':
