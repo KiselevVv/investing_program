@@ -4,7 +4,8 @@ import os
 from flask import Flask, render_template, flash, url_for, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
-from wtforms import FileField, SubmitField, StringField, FloatField
+from wtforms import FileField, SubmitField, StringField, FloatField, \
+    SelectField
 from wtforms.validators import DataRequired
 
 app = Flask(__name__)
@@ -58,6 +59,28 @@ class CreateForm(FlaskForm):
                                   validators=[DataRequired()])
     liabilities = FloatField('liabilities', validators=[DataRequired()])
     submit = SubmitField('Добавить')
+
+
+class ChoiceUpdateForm(FlaskForm):
+    ticker = SelectField('ticker', choices=[], validators=[DataRequired()])
+    submit = SubmitField('Выбрать')
+
+
+class UpdateForm(FlaskForm):
+    ticker = StringField('ticker', validators=[DataRequired()])
+    name = StringField('name', validators=[DataRequired()])
+    sector = StringField('sector', validators=[DataRequired()])
+    ebitda = FloatField('ebitda', validators=[DataRequired()])
+    sales = FloatField('sales', validators=[DataRequired()])
+    net_profit = FloatField('net_profit', validators=[DataRequired()])
+    market_price = FloatField('market_price', validators=[DataRequired()])
+    net_debt = FloatField('net_debt', validators=[DataRequired()])
+    assets = FloatField('assets', validators=[DataRequired()])
+    equity = FloatField('equity', validators=[DataRequired()])
+    cash_equivalents = FloatField('cash_equivalents',
+                                  validators=[DataRequired()])
+    liabilities = FloatField('liabilities', validators=[DataRequired()])
+    submit = SubmitField('Обновить данные')
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -140,10 +163,40 @@ def company_info_page(ticker):
 def create_comp_page():
     form = CreateForm()
     if form.validate_on_submit():
-        db.session.add(Companies(**{k:v for (k,v) in form.data.items() if k != 'submit' and k != 'csrf_token'}))
+        db.session.add(Companies(**{k: v for (k, v) in form.data.items() if
+                                    k != 'submit' and k != 'csrf_token'}))
         db.session.commit()
         flash("Компания успешно добавлена")
     return render_template('create.html', form=form)
+
+
+@app.route('/update', methods=['GET', 'POST'])
+def update_page():
+    form = ChoiceUpdateForm()
+    companies = Companies.query.all()
+    tickers = ['']
+    tickers += [company.ticker for company in companies]
+    form.ticker.choices = tickers
+    if form.validate_on_submit():
+        selected_ticker = form.ticker.data
+        return redirect(url_for('update_comp_page', ticker=selected_ticker))
+        # db.session.add(Companies(**{k: v for (k, v) in form.data.items() if
+        #                             k != 'submit' and k != 'csrf_token'}))
+        # db.session.commit()
+        # flash("Компания успешно добавлена")
+    return render_template('update.html', form=form)
+
+
+@app.route('/update/<ticker>', methods=['GET', 'POST'])
+def update_comp_page(ticker):
+    form = UpdateForm()
+    query = Companies.query.filter_by(ticker=ticker).first()
+    if form.validate_on_submit():
+        Companies.query.filter_by(ticker=ticker).update({k: v for (k, v) in form.data.items() if k != 'submit' and k != 'csrf_token'})
+        db.session.commit()
+        flash("Компания успешно обновлена")
+    return render_template('update.html', form=form, ticker=ticker, query=query)
+
 
 
 if __name__ == '__main__':
