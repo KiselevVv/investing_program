@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="form-container">
+    {% with message = get_flashed_messages() %}
+    {% if message %}
+    <div class="alert alert-primary" role="alert">
+        {{message[0]}}
+    </div>
+    {% endif %}
+    {% endwith %}
+    {% if not ticker %}
+      <form action="/update" method="POST" enctype="multipart/form-data" class="form-create">
+          {{ form.csrf_token }}
+        <div>{{ form.ticker.label }}: {{ form.ticker }}</div>
+          {{ form.submit() }}
+      </form>
+    {% endif %}
+    {% if  ticker %}
+        <form action="/update/{{ ticker }}" method="POST" enctype="multipart/form-data" class="form-create">
+            {{ form.csrf_token }}
+          {% for row in form %}
+            {% if row.name != 'submit' and row.name != 'csrf_token' %}
+          <div>{{ row.label }}{{ row(value=query[row.name]) }}</div>
+          {% endif %}
+        {% endfor %}
+            {{ form.submit() }}
+    {% endif %}
+        </form>
+</div>
+{% endblock %}

@@ -1,0 +1,9 @@
+<nav>
+  <ul>
+    <li><a href="/" class="{% if current_page  == '/' %}active{% endif %}">Главная</a></li>
+    <li><a href="/create" class="{% if current_page  == '/create' %}active{% endif %}">Создать компанию</a></li>
+    <li><a href="/update" class="{% if current_page  == '/update' %}active{% endif %}">Обновить компанию</a></li>
+    <li><a href="/companies" class="{% if current_page  == '/companies' %}active{% endif %}">Список компаний</a></li>
+    <li><a href="/top" class="{% if current_page  == '/top' %}active{% endif %}">Топ компаний</a></li>
+  </ul>
+</nav>

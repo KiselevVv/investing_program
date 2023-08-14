@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="container">
+    {% with message = get_flashed_messages() %}
+      {% if message %}
+        <div class="alert alert-primary" role="alert">
+          {{message[0]}}
+        </div>
+      {% endif %}
+    {% endwith %}
+    <div class="csv-form">
+        <form action="/web/static" method="POST" enctype="multipart/form-data">
+          {{ form.csrf_token }}
+          <label for="csv_file">{{ form.csv_file.label }}</label>
+          {{ form.csv_file() }}
+          {{ form.submit() }}
+        </form>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="form-container">
+    <div class="search-form">
+      <form action="/companies" method="POST">
+          <input type="text" placeholder="Введите название компании" name="comp_name" id="input-comp">
+          <button type="submit" class="submit-button">Поиск</button>
+      </form>
+      {% if search %}
+        <p>Выполнен поиск "{{ search }}"</p>
+        <a href="{{ url_for('companies_page') }}">Сбросить поиск</a>
+      {% endif %}
+    </div>
+    <table class="table-one">
+      <tr class="tr-table">
+        <th class="th-table ticker">Индекс</th>
+        <th class="th-table name">Имя</th>
+        <th class="th-table sector">Область</th>
+      </tr>
+      {% for company in query.items %}
+      <tr class="tr-table">
+        <td class="td-table ticker"><a href="{{ url_for('company_info_page', ticker=company.ticker) }}">{{ company.ticker }}</a></td>
+        <td class="td-table name">{{ company.name }}</td>
+        <td class="td-table sector">{{ company.sector }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% if query.pages > 1 %}
+      <div class="pagination">
+        {% for num in query.iter_pages() %}
+          {% if num %}
+            {% if num == query.page %}
+              <span class="current">{{ num }}</span>
+            {% else %}
+              <a href="{{ url_for('companies_page', page=num) }}">{{ num }}</a>
+            {% endif %}
+          {% else %}
+            <span class="ellipsis">…</span>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+{% endblock %}

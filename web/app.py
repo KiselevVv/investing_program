@@ -13,7 +13,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///companies.db'
 app.config['SECRET_KEY'] = os.urandom(10)
 app.config["DEBUG"] = True
-UPLOAD_FOLDER = 'static/files'
+UPLOAD_FOLDER = 'web/static/files'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 db = SQLAlchemy(app)
 
@@ -68,7 +68,7 @@ class ChoiceUpdateForm(FlaskForm):
 
 
 class UpdateForm(FlaskForm):
-    ticker = StringField('ticker', validators=[DataRequired()])
+    ticker = StringField('ticker', validators=[DataRequired()], render_kw={'readonly': True})
     name = StringField('name', validators=[DataRequired()])
     sector = StringField('sector', validators=[DataRequired()])
     ebitda = FloatField('ebitda', validators=[DataRequired()])
@@ -106,11 +106,7 @@ def index_page():
         flash("CSV файл успешно загружен!")
     # else:
     #     flash("Неверный тип файла")
-    return render_template('index.html', form=form)
-
-
-# @app.route('/search', methods=['GET', 'POST'])
-# def search_page():
+    return render_template('investing/index.html', form=form, current_page='/')
 
 
 @app.route('/companies', methods=['GET', 'POST'])
@@ -125,8 +121,8 @@ def companies_page(page=1):
             Companies.name.like(f'%{search}%')).paginate(page=page,
                                                          per_page=POSTS_PER_PAGE,
                                                          error_out=False)
-        return render_template('companies.html', search=search, query=query)
-    return render_template('companies.html', query=companies_query)
+        return render_template('investing/companies.html', search=search, query=query, current_page='/companies')
+    return render_template('investing/companies.html', query=companies_query, current_page='/companies')
 
 
 def get_formuls(ticker):
@@ -156,8 +152,8 @@ def company_info_page(ticker):
             db.session.delete(query)
             db.session.commit()
             return redirect('/')
-        return render_template('company_info.html', query=query,
-                               values=get_formuls(ticker))
+        return render_template('investing/company_info.html', query=query,
+                               values=get_formuls(ticker), current_page='/companies')
 
 
 @app.route('/create', methods=['GET', 'POST'])
@@ -168,7 +164,7 @@ def create_comp_page():
                                     k != 'submit' and k != 'csrf_token'}))
         db.session.commit()
         flash("Компания успешно добавлена")
-    return render_template('create.html', form=form)
+    return render_template('investing/create.html', form=form, current_page='/create')
 
 
 @app.route('/update', methods=['GET', 'POST'])
@@ -185,7 +181,7 @@ def update_page():
         #                             k != 'submit' and k != 'csrf_token'}))
         # db.session.commit()
         # flash("Компания успешно добавлена")
-    return render_template('update.html', form=form)
+    return render_template('investing/update.html', form=form, current_page='/update')
 
 
 @app.route('/update/<ticker>', methods=['GET', 'POST'])
@@ -198,8 +194,8 @@ def update_comp_page(ticker):
              k != 'submit' and k != 'csrf_token'})
         db.session.commit()
         flash("Компания успешно обновлена")
-    return render_template('update.html', form=form, ticker=ticker,
-                           query=query)
+    return render_template('investing/update.html', form=form, ticker=ticker,
+                           query=query, current_page='/update')
 
 
 @app.route('/top', methods=['GET'])
@@ -210,8 +206,8 @@ def top_comp_page():
         desc(Companies.net_profit / Companies.equity)).limit(10).all()
     query_roa = db.session.query(Companies).order_by(
         desc(Companies.net_profit / Companies.assets)).limit(10).all()
-    return render_template('top.html', query_nd_ebitda=query_nd_ebitda,
-                           query_roe=query_roe, query_roa=query_roa)
+    return render_template('investing/top.html', query_nd_ebitda=query_nd_ebitda,
+                           query_roe=query_roe, query_roa=query_roa, current_page='/top')
 
 
 if __name__ == '__main__':

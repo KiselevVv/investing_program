@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="table-row">
+    <div class="table-cell">
+      <div class="table-container">
+        <h3>ND/EBITDA</h3>
+        <table>
+          <tr>
+            <th>Индекс</th>
+            <th>Имя</th>
+          </tr>
+          {% for company in query_nd_ebitda %}
+          <tr>
+            <td><a href="{{ url_for('company_info_page', ticker=company.ticker) }}">{{ company.ticker }}</a></td>
+            <td>{{ company.net_debt / company.ebitda }}</td>
+          </tr>
+          {% endfor %}
+        </table>
+      </div>
+    </div>
+  <div class="table-cell">
+    <div class="table-container">
+      <h3>ROE</h3>
+      <table>
+        <tr>
+          <th>Индекс</th>
+          <th>Имя</th>
+        </tr>
+        {% for company in query_roe %}
+        <tr>
+          <td><a href="{{ url_for('company_info_page', ticker=company.ticker) }}">{{ company.ticker }}</a></td>
+          <td>{{ company.net_profit / company.equity }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+  <div class="table-cell">
+    <div class="table-container">
+      <h3>ROA</h3>
+      <table>
+        <tr>
+          <th>Индекс</th>
+          <th>Имя</th>
+        </tr>
+        {% for company in query_roa %}
+        <tr>
+          <td><a href="{{ url_for('company_info_page', ticker=company.ticker) }}">{{ company.ticker }}</a></td>
+          <td>{{ company.net_profit / company.assets }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+  </div>
+{% endblock %}
