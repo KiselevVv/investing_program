@@ -1,24 +1,38 @@
 {% extends "base.html" %}
+
 {% block content %}
-  <div class="form-container">
-    <h1> {{ query.name }} </h1>
-    <form method="POST">
-      <button type="submit" formaction="/companies/{{ query.ticker }}" class="delete-button">Удалить</button>
-    </form>
-    {% with message = get_flashed_messages() %}
-      {% if message %}
-        <div class="alert alert-primary" role="alert">
-          {{message[0]}}
-        </div>
-      {% endif %}
-    {% endwith %}
-    <table class="table-one">
-      {% for k, v in values.items() %}
-      <tr class="tr-table">
-        <td class="td-table">{{ k }}</td>
-        <td class="td-table">{{ v }}</td>
-      </tr>
-      {% endfor %}
-    </table>
+<div class="form-container">
+  <h1> {{ query.name }} </h1>
+  <form method="POST">
+    <button type="submit" formaction="/companies/{{ query.ticker }}" class="delete-button">Удалить</button>
+  </form>
+
+  <div class="table-row">
+    <div class="table-cell">
+      <table>
+        {% for k, v in formuls_temlate.items() %}
+        <tr class="tr-table">
+          <td class="td-table">{{ k }}</td>
+          <td class="td-table">{{ v }}</td>
+        </tr>
+        {% endfor %}
+      </table>
     </div>
+
+    <div class="table-cell">
+      <table>
+        {% for k, v in values.items() %}
+        <tr class="tr-table">
+          <td class="td-table">{{ k }}</td>
+          {% if v %}
+            <td class="td-table">{{ v | round(4) }}</td>
+          {% else %}
+            <td class="td-table">{{ v }}</td>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+</div>
 {% endblock %}

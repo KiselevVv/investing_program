@@ -9,7 +9,7 @@
       {% endif %}
     {% endwith %}
     <div class="csv-form">
-        <form action="/web/static" method="POST" enctype="multipart/form-data">
+        <form action="/" method="POST" enctype="multipart/form-data">
           {{ form.csrf_token }}
           <label for="csv_file">{{ form.csv_file.label }}</label>
           {{ form.csv_file() }}

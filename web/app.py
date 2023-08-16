@@ -17,8 +17,6 @@ UPLOAD_FOLDER = 'web/static/files'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 db = SQLAlchemy(app)
 
-POSTS_PER_PAGE = 20
-
 
 class Companies(db.Model):
     ticker = db.Column(db.String(30), primary_key=True)
@@ -39,6 +37,16 @@ with app.app_context():
     db.create_all()
     db.session.commit()
 
+POSTS_PER_PAGE = 20
+
+formuls_temlate = {'P/E': 'market_price / net_profit',
+                   'P/S': 'market_price / sales',
+                   'P/B': 'market_price / assets',
+                   'ND/EBITDA': 'net_debt / ebitda',
+                   'ROE': 'net_profit / equity',
+                   'ROA': 'net_profit / assets',
+                   'L/A': 'liabilities / assets'}
+
 
 class UploadForm(FlaskForm):
     csv_file = FileField('CSV файл', validators=[DataRequired()])
@@ -46,19 +54,66 @@ class UploadForm(FlaskForm):
 
 
 class CreateForm(FlaskForm):
-    ticker = StringField('ticker', validators=[DataRequired()])
-    name = StringField('name', validators=[DataRequired()])
-    sector = StringField('sector', validators=[DataRequired()])
-    ebitda = FloatField('ebitda', validators=[DataRequired()])
-    sales = FloatField('sales', validators=[DataRequired()])
-    net_profit = FloatField('net_profit', validators=[DataRequired()])
-    market_price = FloatField('market_price', validators=[DataRequired()])
-    net_debt = FloatField('net_debt', validators=[DataRequired()])
-    assets = FloatField('assets', validators=[DataRequired()])
-    equity = FloatField('equity', validators=[DataRequired()])
-    cash_equivalents = FloatField('cash_equivalents',
-                                  validators=[DataRequired()])
-    liabilities = FloatField('liabilities', validators=[DataRequired()])
+    ticker = StringField(
+        'ticker',
+        validators=[DataRequired()],
+        render_kw={"placeholder": "AAA"}
+    )
+    name = StringField(
+        'name',
+        validators=[DataRequired()],
+        render_kw={"placeholder": "Aple"}
+    )
+    sector = StringField(
+        'sector',
+        validators=[DataRequired()],
+        render_kw={"placeholder": "Electronic Technology"}
+    )
+    ebitda = FloatField(
+        'ebitda',
+        validators=[DataRequired()],
+        render_kw={"placeholder": "0.2134213"}
+    )
+    sales = FloatField(
+        'sales',
+        validators=[DataRequired()],
+        render_kw={"placeholder": "0.2134213"}
+    )
+    net_profit = FloatField(
+        'net_profit',
+        validators=[DataRequired()],
+        render_kw={"placeholder": "0.2134213"}
+    )
+    market_price = FloatField(
+        'market_price',
+        validators=[DataRequired()],
+        render_kw={"placeholder": "0.2134213"}
+    )
+    net_debt = FloatField(
+        'net_debt',
+        validators=[DataRequired()],
+        render_kw={"placeholder": "0.2134213"}
+    )
+    assets = FloatField(
+        'assets',
+        validators=[DataRequired()],
+        render_kw={"placeholder": "0.2134213"}
+    )
+    equity = FloatField(
+        'equity',
+        validators=[DataRequired()],
+        render_kw={"placeholder": "0.2134213"}
+    )
+    cash_equivalents = FloatField(
+        'cash_equivalents',
+        validators=[DataRequired()],
+        render_kw={"placeholder": "0.2134213"}
+    )
+    liabilities = FloatField(
+        'liabilities',
+        validators=[DataRequired()],
+        render_kw={"placeholder": "0.2134213"}
+    )
     submit = SubmitField('Добавить')
 
 
@@ -68,7 +123,8 @@ class ChoiceUpdateForm(FlaskForm):
 
 
 class UpdateForm(FlaskForm):
-    ticker = StringField('ticker', validators=[DataRequired()], render_kw={'readonly': True})
+    ticker = StringField('ticker', validators=[DataRequired()],
+                         render_kw={'readonly': True})
     name = StringField('name', validators=[DataRequired()])
     sector = StringField('sector', validators=[DataRequired()])
     ebitda = FloatField('ebitda', validators=[DataRequired()])
@@ -121,8 +177,10 @@ def companies_page(page=1):
             Companies.name.like(f'%{search}%')).paginate(page=page,
                                                          per_page=POSTS_PER_PAGE,
                                                          error_out=False)
-        return render_template('investing/companies.html', search=search, query=query, current_page='/companies')
-    return render_template('investing/companies.html', query=companies_query, current_page='/companies')
+        return render_template('investing/companies.html', search=search,
+                               query=query, current_page='/companies')
+    return render_template('investing/companies.html', query=companies_query,
+                           current_page='/companies')
 
 
 def get_formuls(ticker):
@@ -153,7 +211,9 @@ def company_info_page(ticker):
             db.session.commit()
             return redirect('/')
         return render_template('investing/company_info.html', query=query,
-                               values=get_formuls(ticker), current_page='/companies')
+                               values=get_formuls(ticker),
+                               formuls_temlate=formuls_temlate,
+                               current_page='/companies')
 
 
 @app.route('/create', methods=['GET', 'POST'])
@@ -164,7 +224,8 @@ def create_comp_page():
                                     k != 'submit' and k != 'csrf_token'}))
         db.session.commit()
         flash("Компания успешно добавлена")
-    return render_template('investing/create.html', form=form, current_page='/create')
+    return render_template('investing/create.html', form=form,
+                           current_page='/create')
 
 
 @app.route('/update', methods=['GET', 'POST'])
@@ -181,7 +242,8 @@ def update_page():
         #                             k != 'submit' and k != 'csrf_token'}))
         # db.session.commit()
         # flash("Компания успешно добавлена")
-    return render_template('investing/update.html', form=form, current_page='/update')
+    return render_template('investing/update.html', form=form,
+                           current_page='/update')
 
 
 @app.route('/update/<ticker>', methods=['GET', 'POST'])
@@ -206,8 +268,10 @@ def top_comp_page():
         desc(Companies.net_profit / Companies.equity)).limit(10).all()
     query_roa = db.session.query(Companies).order_by(
         desc(Companies.net_profit / Companies.assets)).limit(10).all()
-    return render_template('investing/top.html', query_nd_ebitda=query_nd_ebitda,
-                           query_roe=query_roe, query_roa=query_roa, current_page='/top')
+    return render_template('investing/top.html',
+                           query_nd_ebitda=query_nd_ebitda,
+                           query_roe=query_roe, query_roa=query_roa,
+                           current_page='/top')
 
 
 if __name__ == '__main__':

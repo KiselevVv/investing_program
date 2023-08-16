@@ -161,28 +161,35 @@ html, body {
 
 .table-one {
     max-width: 800px;
-    margin: 0 auto; /* Центрируем таблицу */
+    margin: 0 auto;
     margin-top: 5%;
     border-collapse: collapse;
-    width: 100%; /* Ширина таблицы */
+    width: 100%;
 }
 .th-table, .td-table {
     padding: 8px;
-    text-align: left;
+    text-align: center;
     border-bottom: 1px solid #ddd;
     background-color: #f2f2f2;
 }
 
 .ticker {
-    width: 20%; /* Ширина столбца Ticker */
+    width: 20%;
+    text-align: center;
 }
 .name {
-    width: 50%; /* Ширина столбца Name */
+    width: 50%;
 }
 .sector {
-    width: 30%; /* Ширина столбца Sector */
+    width: 30%;
 }
 
+.th-table:first-child, .td-table:first-child {
+    width: 10%;
+    text-align: center;
+    background-color: #f2f2f2;
+    border-bottom: 1px solid #ddd;
+}
 
 .pagination {
   display: flex;

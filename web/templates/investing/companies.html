@@ -1,30 +1,36 @@
 {% extends "base.html" %}
 {% block content %}
   <div class="form-container">
-    <div class="search-form">
-      <form action="/companies" method="POST">
-          <input type="text" placeholder="Введите название компании" name="comp_name" id="input-comp">
-          <button type="submit" class="submit-button">Поиск</button>
-      </form>
-      {% if search %}
-        <p>Выполнен поиск "{{ search }}"</p>
-        <a href="{{ url_for('companies_page') }}">Сбросить поиск</a>
-      {% endif %}
-    </div>
-    <table class="table-one">
-      <tr class="tr-table">
-        <th class="th-table ticker">Индекс</th>
-        <th class="th-table name">Имя</th>
-        <th class="th-table sector">Область</th>
-      </tr>
-      {% for company in query.items %}
-      <tr class="tr-table">
-        <td class="td-table ticker"><a href="{{ url_for('company_info_page', ticker=company.ticker) }}">{{ company.ticker }}</a></td>
-        <td class="td-table name">{{ company.name }}</td>
-        <td class="td-table sector">{{ company.sector }}</td>
-      </tr>
-      {% endfor %}
-    </table>
+    {% if query.items %}
+      <div class="search-form">
+        <form action="/companies" method="POST">
+            <input type="text" placeholder="Введите название компании" name="comp_name" id="input-comp">
+            <button type="submit" class="submit-button">Поиск</button>
+        </form>
+        {% if search %}
+          <p>Выполнен поиск "{{ search }}"</p>
+          <a href="{{ url_for('companies_page') }}">Сбросить поиск</a>
+        {% endif %}
+      </div>
+        <table class="table-one">
+            <tr class="tr-table">
+                <th class="th-table">№</th>
+                <th class="th-table ticker">ticker</th>
+                <th class="th-table name">name</th>
+                <th class="th-table sector">sector</th>
+            </tr>
+            {% for company in query.items %}
+            <tr class="tr-table">
+                <td class="td-table">{{ (query.page - 1) * query.per_page + loop.index }}</td>
+                <td class="td-table ticker"><a href="{{ url_for('company_info_page', ticker=company.ticker) }}">{{ company.ticker }}</a></td>
+                <td class="td-table name">{{ company.name }}</td>
+                <td class="td-table sector">{{ company.sector }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+      <div><h3>Вы не загрузили ни одной компании</h3></div>
+    {% endif %}
     {% if query.pages > 1 %}
       <div class="pagination">
         {% for num in query.iter_pages() %}

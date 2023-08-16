@@ -1,56 +1,72 @@
 {% extends "base.html" %}
 {% block content %}
   <div class="table-row">
+    {% if query_nd_ebitda or query_roe or query_roa %}
+      <div class="table-cell">
+        <div class="table-container">
+          <h4>ND/EBITDA</h4>
+          <table>
+            <tr>
+              <th>ticker</th>
+              <th>name</th>
+            </tr>
+            {% for company in query_nd_ebitda %}
+            <tr>
+              <td><a href="{{ url_for('company_info_page', ticker=company.ticker) }}">{{ company.ticker }}</a></td>
+              {% if company.net_debt is not none and company.ebitda is not none %}
+                <td>{{ (company.net_debt / company.ebitda) | round(4) }}</td>
+              {% else %}
+                <td>{{ company.net_debt / company.ebitda }}</td>
+              {% endif %}
+            </tr>
+            {% endfor %}
+          </table>
+        </div>
+      </div>
     <div class="table-cell">
       <div class="table-container">
-        <h3>ND/EBITDA</h3>
+        <h4>ROE</h4>
         <table>
           <tr>
-            <th>Индекс</th>
-            <th>Имя</th>
+            <th>ticker</th>
+            <th>name</th>
           </tr>
-          {% for company in query_nd_ebitda %}
+          {% for company in query_roe %}
           <tr>
             <td><a href="{{ url_for('company_info_page', ticker=company.ticker) }}">{{ company.ticker }}</a></td>
-            <td>{{ company.net_debt / company.ebitda }}</td>
+            {% if company.net_profit is not none and company.equity is not none %}
+              <td>{{ (company.net_profit / company.equity) | round(4) }}</td>
+            {% else %}
+              <td>{{ company.net_profit / company.equity }}</td>
+            {% endif %}
           </tr>
           {% endfor %}
         </table>
       </div>
     </div>
-  <div class="table-cell">
-    <div class="table-container">
-      <h3>ROE</h3>
-      <table>
-        <tr>
-          <th>Индекс</th>
-          <th>Имя</th>
-        </tr>
-        {% for company in query_roe %}
-        <tr>
-          <td><a href="{{ url_for('company_info_page', ticker=company.ticker) }}">{{ company.ticker }}</a></td>
-          <td>{{ company.net_profit / company.equity }}</td>
-        </tr>
-        {% endfor %}
-      </table>
+    <div class="table-cell">
+      <div class="table-container">
+        <h4>ROA</h4>
+        <table>
+          <tr>
+            <th>ticker</th>
+            <th>name</th>
+          </tr>
+          {% for company in query_roa %}
+          <tr>
+            <td><a href="{{ url_for('company_info_page', ticker=company.ticker) }}">{{ company.ticker }}</a></td>
+            {% if company.net_profit is not none and company.assets is not none %}
+              <td>{{ (company.net_profit / company.assets) | round(4) }}</td>
+            {% else %}
+              <td>{{ company.net_profit / company.assets }}</td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+        </table>
+      </div>
     </div>
-  </div>
-  <div class="table-cell">
-    <div class="table-container">
-      <h3>ROA</h3>
-      <table>
-        <tr>
-          <th>Индекс</th>
-          <th>Имя</th>
-        </tr>
-        {% for company in query_roa %}
-        <tr>
-          <td><a href="{{ url_for('company_info_page', ticker=company.ticker) }}">{{ company.ticker }}</a></td>
-          <td>{{ company.net_profit / company.assets }}</td>
-        </tr>
-        {% endfor %}
-      </table>
-    </div>
-  </div>
+    {% else %}
+      <div><h3>Вы не загрузили ни одной компании</h3></div>
+    {% endif %}
   </div>
 {% endblock %}
