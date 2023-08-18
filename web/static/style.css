@@ -101,6 +101,9 @@ html, body {
     background-color: #555;
 }
 
+.validation_error {
+    color: red;
+}
 
 .search-form {
     text-align: center;

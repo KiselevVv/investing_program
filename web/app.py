@@ -4,12 +4,12 @@ import os
 import sqlalchemy
 from flask import Flask, render_template, flash, url_for, request, redirect
 from flask_sqlalchemy import SQLAlchemy
-from flask_wtf import FlaskForm
+
 from sqlalchemy import desc
 from sqlalchemy.exc import IntegrityError
-from wtforms import FileField, SubmitField, StringField, FloatField, \
-    SelectField
-from wtforms.validators import DataRequired
+
+from forms import UploadForm, CreateForm, ChoiceUpdateForm, UpdateForm
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///companies.db'
@@ -50,98 +50,6 @@ formuls_temlate = {'P/E': 'market_price / net_profit',
                    'L/A': 'liabilities / assets'}
 
 
-class UploadForm(FlaskForm):
-    csv_file = FileField('CSV файл', validators=[DataRequired()])
-    submit = SubmitField('Загрузить')
-
-
-class CreateForm(FlaskForm):
-    ticker = StringField(
-        'ticker',
-        validators=[DataRequired()],
-        render_kw={"placeholder": "AAA"}
-    )
-    name = StringField(
-        'name',
-        validators=[DataRequired()],
-        render_kw={"placeholder": "Aple"}
-    )
-    sector = StringField(
-        'sector',
-        validators=[DataRequired()],
-        render_kw={"placeholder": "Electronic Technology"}
-    )
-    ebitda = FloatField(
-        'ebitda',
-        validators=[DataRequired()],
-        render_kw={"placeholder": "0.2134213"}
-    )
-    sales = FloatField(
-        'sales',
-        validators=[DataRequired()],
-        render_kw={"placeholder": "0.2134213"}
-    )
-    net_profit = FloatField(
-        'net_profit',
-        validators=[DataRequired()],
-        render_kw={"placeholder": "0.2134213"}
-    )
-    market_price = FloatField(
-        'market_price',
-        validators=[DataRequired()],
-        render_kw={"placeholder": "0.2134213"}
-    )
-    net_debt = FloatField(
-        'net_debt',
-        validators=[DataRequired()],
-        render_kw={"placeholder": "0.2134213"}
-    )
-    assets = FloatField(
-        'assets',
-        validators=[DataRequired()],
-        render_kw={"placeholder": "0.2134213"}
-    )
-    equity = FloatField(
-        'equity',
-        validators=[DataRequired()],
-        render_kw={"placeholder": "0.2134213"}
-    )
-    cash_equivalents = FloatField(
-        'cash_equivalents',
-        validators=[DataRequired()],
-        render_kw={"placeholder": "0.2134213"}
-    )
-    liabilities = FloatField(
-        'liabilities',
-        validators=[DataRequired()],
-        render_kw={"placeholder": "0.2134213"}
-    )
-    submit = SubmitField('Добавить')
-
-
-class ChoiceUpdateForm(FlaskForm):
-    ticker = SelectField('ticker', choices=[], validators=[DataRequired()])
-    submit = SubmitField('Выбрать')
-
-
-class UpdateForm(FlaskForm):
-    ticker = StringField('ticker', validators=[DataRequired()],
-                         render_kw={'readonly': True})
-    name = StringField('name', validators=[DataRequired()])
-    sector = StringField('sector', validators=[DataRequired()])
-    ebitda = FloatField('ebitda', validators=[DataRequired()])
-    sales = FloatField('sales', validators=[DataRequired()])
-    net_profit = FloatField('net_profit', validators=[DataRequired()])
-    market_price = FloatField('market_price', validators=[DataRequired()])
-    net_debt = FloatField('net_debt', validators=[DataRequired()])
-    assets = FloatField('assets', validators=[DataRequired()])
-    equity = FloatField('equity', validators=[DataRequired()])
-    cash_equivalents = FloatField('cash_equivalents',
-                                  validators=[DataRequired()])
-    liabilities = FloatField('liabilities', validators=[DataRequired()])
-    submit = SubmitField('Обновить данные')
-
-
 def load_to_db(file_path):
     with open(file_path, 'r') as file:
         data = list(csv.DictReader(file))
@@ -167,9 +75,8 @@ def load_to_db(file_path):
 @app.route('/', methods=['GET', 'POST'])
 def index_page():
     form = UploadForm()
-    if form.validate_on_submit():
-        filename = form.csv_file.data.filename
-        if filename.split('.')[-1] == 'csv':
+    if request.method == 'POST':
+        if form.validate_on_submit():
             csv_file = form.csv_file.data
             file_path = os.path.join(app.config['UPLOAD_FOLDER'],
                                      csv_file.filename)
@@ -234,11 +141,17 @@ def company_info_page(ticker):
 @app.route('/create', methods=['GET', 'POST'])
 def create_comp_page():
     form = CreateForm()
-    if form.validate_on_submit():
-        db.session.add(Companies(**{k: v for (k, v) in form.data.items() if
-                                    k != 'submit' and k != 'csrf_token'}))
-        db.session.commit()
-        flash("Компания успешно добавлена")
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            ticker_query = db.session.query(Companies).filter_by(ticker=form.data['ticker']).first()
+            name_query = db.session.query(Companies).filter_by(ticker=form.data['name']).first()
+            if not ticker_query and not name_query:
+                db.session.add(Companies(**{k: v for (k, v) in form.data.items() if
+                                            k != 'submit' and k != 'csrf_token'}))
+                db.session.commit()
+                flash("Компания успешно добавлена")
+            else:
+                flash("Такая компания уже существует!")
     return render_template('investing/create.html', form=form,
                            current_page='/create')
 
@@ -253,10 +166,6 @@ def update_page():
     if form.validate_on_submit():
         selected_ticker = form.ticker.data
         return redirect(url_for('update_comp_page', ticker=selected_ticker))
-        # db.session.add(Companies(**{k: v for (k, v) in form.data.items() if
-        #                             k != 'submit' and k != 'csrf_token'}))
-        # db.session.commit()
-        # flash("Компания успешно добавлена")
     return render_template('investing/update.html', form=form,
                            current_page='/update')
 
