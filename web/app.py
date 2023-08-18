@@ -1,10 +1,12 @@
 import csv
 import os
 
+import sqlalchemy
 from flask import Flask, render_template, flash, url_for, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from sqlalchemy import desc
+from sqlalchemy.exc import IntegrityError
 from wtforms import FileField, SubmitField, StringField, FloatField, \
     SelectField
 from wtforms.validators import DataRequired
@@ -140,28 +142,45 @@ class UpdateForm(FlaskForm):
     submit = SubmitField('Обновить данные')
 
 
+def load_to_db(file_path):
+    with open(file_path, 'r') as file:
+        data = list(csv.DictReader(file))
+        for dic in data:
+            for column_name, row_value in dic.items():
+                if row_value == '':
+                    dic[column_name] = None
+            try:
+                query = db.session.query(Companies).filter_by(
+                    ticker=Companies(**dic).ticker
+                )
+                if not query.first():
+                    db.session.add(Companies(**dic))
+                else:
+                    query.update(dic)
+            except (TypeError, sqlalchemy.exc.IntegrityError):
+                db.session.rollback()
+                return False
+        db.session.commit()
+        return True
+
+
 @app.route('/', methods=['GET', 'POST'])
 def index_page():
     form = UploadForm()
     if form.validate_on_submit():
-        csv_file = form.csv_file.data
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'],
-                                 csv_file.filename)
-        csv_file.save(file_path)
-        with open(file_path, 'r') as file:
-            data = list(csv.DictReader(file))
-            for dic in data:
-                for column_name, row_value in dic.items():
-                    if row_value == '':
-                        dic[column_name] = None
-                if not db.session.query(Companies).filter_by(
-                        ticker=Companies(**dic).ticker).first():
-                    db.session.add(Companies(**dic))
-            db.session.commit()
-        os.remove(file_path)
-        flash("CSV файл успешно загружен!")
-    # else:
-    #     flash("Неверный тип файла")
+        filename = form.csv_file.data.filename
+        if filename.split('.')[-1] == 'csv':
+            csv_file = form.csv_file.data
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'],
+                                     csv_file.filename)
+            csv_file.save(file_path)
+            if load_to_db(file_path):
+                flash("CSV файл успешно загружен!")
+            else:
+                flash("CSV файл имеет неверную структуру!")
+            os.remove(file_path)
+        else:
+            flash("Неверный тип файла")
     return render_template('investing/index.html', form=form, current_page='/')
 
 
@@ -195,10 +214,6 @@ def get_formuls(ticker):
     for k, v in formuls.items():
         query = db.session.query(v).filter(Companies.ticker == ticker).one()[0]
         values[k] = query
-        # if query != None:
-        #     values[k] = db.session.query(v).filter(Companies.ticker == ticker_query).one()[0]:.2f}
-        # else:
-        #     print(f'{k} = {db.session.query(v).filter(Companies.ticker == ticker_query).one()[0]}')
     return values
 
 
