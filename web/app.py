@@ -144,7 +144,7 @@ def create_comp_page():
     if request.method == 'POST':
         if form.validate_on_submit():
             ticker_query = db.session.query(Companies).filter_by(ticker=form.data['ticker']).first()
-            name_query = db.session.query(Companies).filter_by(ticker=form.data['name']).first()
+            name_query = db.session.query(Companies).filter_by(name=form.data['name']).first()
             if not ticker_query and not name_query:
                 db.session.add(Companies(**{k: v for (k, v) in form.data.items() if
                                             k != 'submit' and k != 'csrf_token'}))
@@ -163,9 +163,10 @@ def update_page():
     tickers = ['']
     tickers += [company.ticker for company in companies]
     form.ticker.choices = tickers
-    if form.validate_on_submit():
-        selected_ticker = form.ticker.data
-        return redirect(url_for('update_comp_page', ticker=selected_ticker))
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            selected_ticker = form.ticker.data
+            return redirect(url_for('update_comp_page', ticker=selected_ticker))
     return render_template('investing/update.html', form=form,
                            current_page='/update')
 
@@ -174,12 +175,17 @@ def update_page():
 def update_comp_page(ticker):
     form = UpdateForm()
     query = Companies.query.filter_by(ticker=ticker).first()
-    if form.validate_on_submit():
-        Companies.query.filter_by(ticker=ticker).update(
-            {k: v for (k, v) in form.data.items() if
-             k != 'submit' and k != 'csrf_token'})
-        db.session.commit()
-        flash("Компания успешно обновлена")
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            name_query = db.session.query(Companies).filter_by(name=form.data['name']).first()
+            if not name_query:
+                Companies.query.filter_by(ticker=ticker).update(
+                    {k: v for (k, v) in form.data.items() if
+                     k != 'submit' and k != 'csrf_token'})
+                db.session.commit()
+                flash("Компания успешно обновлена")
+            else:
+                flash("Компания c таким именем уже существует!")
     return render_template('investing/update.html', form=form, ticker=ticker,
                            query=query, current_page='/update')
 

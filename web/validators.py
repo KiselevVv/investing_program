@@ -9,7 +9,3 @@ def ticker_check(form, field):
 def isalpha_check(form, field):
     if field.data.isdigit():
         raise ValidationError('Поле не может содержать цифр')
-
-def isdigit_check(form, field):
-    if field.data is None or not isinstance(field.data, float):
-        raise ValidationError('Поле не может содержать букв')

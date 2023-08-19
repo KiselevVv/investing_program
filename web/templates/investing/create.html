@@ -13,7 +13,7 @@
     {% for row in form %}
       {% if row.name != 'submit' and row.name != 'csrf_token' %}
         <div>{{ row.label }}{{ row }}</div>
-        <span class="validation_error">{{ row.errors[-1] }}</span><br>
+        <span class="validation_error">{{ ', '.join(row.errors) }}</span><br>
       {% endif %}
     {% endfor %}
     {{ form.submit() }}

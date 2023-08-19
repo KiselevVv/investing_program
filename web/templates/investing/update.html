@@ -20,7 +20,8 @@
             {{ form.csrf_token }}
           {% for row in form %}
             {% if row.name != 'submit' and row.name != 'csrf_token' %}
-          <div>{{ row.label }}{{ row(value=query[row.name]) }}</div>
+          <div>{{ row.label }}{% if query[row.name] is not none %}{{ row(value=query[row.name]) }}{% else %}{{ row(value='') }}{% endif %}</div>
+          <span class="validation_error">{{ ', '.join(row.errors) }}</span><br>
           {% endif %}
         {% endfor %}
             {{ form.submit() }}
