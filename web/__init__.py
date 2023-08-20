@@ -17,4 +17,4 @@ with app.app_context():
     db.session.commit()
 
 # import views
-from web import views
+from web import views, core
