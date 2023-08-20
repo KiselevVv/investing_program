@@ -2,52 +2,23 @@ import csv
 import os
 
 import sqlalchemy
-from flask import Flask, render_template, flash, url_for, request, redirect
-from flask_sqlalchemy import SQLAlchemy
+from flask import render_template, flash, url_for, request, redirect
 
 from sqlalchemy import desc
 from sqlalchemy.exc import IntegrityError
 
-from forms import UploadForm, CreateForm, ChoiceUpdateForm, UpdateForm
-
-
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///companies.db'
-app.config['SECRET_KEY'] = os.urandom(10)
-app.config["DEBUG"] = True
-UPLOAD_FOLDER = 'web/static/files'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-db = SQLAlchemy(app)
-
-
-class Companies(db.Model):
-    ticker = db.Column(db.String(30), primary_key=True)
-    name = db.Column(db.String(80), unique=True, nullable=False)
-    sector = db.Column(db.String(80), nullable=False)
-    ebitda = db.Column(db.Float, nullable=True)
-    sales = db.Column(db.Float, nullable=True)
-    net_profit = db.Column(db.Float, nullable=True)
-    market_price = db.Column(db.Float, nullable=True)
-    net_debt = db.Column(db.Float, nullable=True)
-    assets = db.Column(db.Float, nullable=True)
-    equity = db.Column(db.Float, nullable=True)
-    cash_equivalents = db.Column(db.Float, nullable=True)
-    liabilities = db.Column(db.Float, nullable=True)
-
-
-with app.app_context():
-    db.create_all()
-    db.session.commit()
+from web import app
+from .forms import UploadForm, CreateForm, ChoiceUpdateForm, UpdateForm
+from .models import Companies, db
 
 POSTS_PER_PAGE = 20
-
-formuls_temlate = {'P/E': 'market_price / net_profit',
-                   'P/S': 'market_price / sales',
-                   'P/B': 'market_price / assets',
-                   'ND/EBITDA': 'net_debt / ebitda',
-                   'ROE': 'net_profit / equity',
-                   'ROA': 'net_profit / assets',
-                   'L/A': 'liabilities / assets'}
+FORMULS_TEMPLATE = {'P/E': 'market_price / net_profit',
+                    'P/S': 'market_price / sales',
+                    'P/B': 'market_price / assets',
+                    'ND/EBITDA': 'net_debt / ebitda',
+                    'ROE': 'net_profit / equity',
+                    'ROA': 'net_profit / assets',
+                    'L/A': 'liabilities / assets'}
 
 
 def load_to_db(file_path):
@@ -134,7 +105,7 @@ def company_info_page(ticker):
             return redirect('/')
         return render_template('investing/company_info.html', query=query,
                                values=get_formuls(ticker),
-                               formuls_temlate=formuls_temlate,
+                               formuls_temlate=FORMULS_TEMPLATE,
                                current_page='/companies')
 
 
@@ -143,11 +114,14 @@ def create_comp_page():
     form = CreateForm()
     if request.method == 'POST':
         if form.validate_on_submit():
-            ticker_query = db.session.query(Companies).filter_by(ticker=form.data['ticker']).first()
-            name_query = db.session.query(Companies).filter_by(name=form.data['name']).first()
+            ticker_query = db.session.query(Companies).filter_by(
+                ticker=form.data['ticker']).first()
+            name_query = db.session.query(Companies).filter_by(
+                name=form.data['name']).first()
             if not ticker_query and not name_query:
-                db.session.add(Companies(**{k: v for (k, v) in form.data.items() if
-                                            k != 'submit' and k != 'csrf_token'}))
+                db.session.add(
+                    Companies(**{k: v for (k, v) in form.data.items() if
+                                 k != 'submit' and k != 'csrf_token'}))
                 db.session.commit()
                 flash("Компания успешно добавлена")
             else:
@@ -166,7 +140,8 @@ def update_page():
     if request.method == 'POST':
         if form.validate_on_submit():
             selected_ticker = form.ticker.data
-            return redirect(url_for('update_comp_page', ticker=selected_ticker))
+            return redirect(
+                url_for('update_comp_page', ticker=selected_ticker))
     return render_template('investing/update.html', form=form,
                            current_page='/update')
 
@@ -177,8 +152,9 @@ def update_comp_page(ticker):
     query = Companies.query.filter_by(ticker=ticker).first()
     if request.method == 'POST':
         if form.validate_on_submit():
-            name_query = db.session.query(Companies).filter_by(name=form.data['name']).first()
-            if not name_query:
+            name_query = db.session.query(Companies).filter_by(
+                name=form.data['name']).first()
+            if name_query.ticker == query.ticker:
                 Companies.query.filter_by(ticker=ticker).update(
                     {k: v for (k, v) in form.data.items() if
                      k != 'submit' and k != 'csrf_token'})
@@ -202,7 +178,3 @@ def top_comp_page():
                            query_nd_ebitda=query_nd_ebitda,
                            query_roe=query_roe, query_roa=query_roa,
                            current_page='/top')
-
-
-if __name__ == '__main__':
-    app.run()
