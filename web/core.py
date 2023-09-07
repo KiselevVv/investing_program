@@ -1,5 +1,6 @@
-from web import app
 from flask import render_template
+
+from web import app
 
 
 @app.errorhandler(404)

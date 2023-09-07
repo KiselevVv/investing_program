@@ -3,7 +3,6 @@ import os
 
 import sqlalchemy
 from flask import render_template, flash, url_for, request, redirect
-
 from sqlalchemy import desc
 from sqlalchemy.exc import IntegrityError
 
@@ -21,7 +20,12 @@ FORMULS_TEMPLATE = {'P/E': 'market_price / net_profit',
                     'L/A': 'liabilities / assets'}
 
 
-def load_to_db(file_path):
+def load_to_db(file_path: str) -> bool:
+    """
+    Загружает данные из CSV файла в базу данных.
+    :param file_path: Путь к CSV файлу:
+    :return: True, если загрузка прошла успешно, иначе False.
+    """
     with open(file_path, 'r') as file:
         data = list(csv.DictReader(file))
         for dic in data:
@@ -45,6 +49,10 @@ def load_to_db(file_path):
 
 @app.route('/', methods=['GET', 'POST'])
 def index_page():
+    """
+    Главная страница приложения.
+    :return: Страницу index.html.
+    """
     form = UploadForm()
     if request.method == 'POST':
         if form.validate_on_submit():
@@ -65,22 +73,36 @@ def index_page():
 @app.route('/companies', methods=['GET', 'POST'])
 @app.route('/companies/<int:page>', methods=['GET', 'POST'])
 def companies_page(page=1):
-    companies_query = db.session.query(Companies).paginate(page=page,
-                                                           per_page=POSTS_PER_PAGE,
-                                                           error_out=False)
+    """
+    Страница списка компаний.
+    :param page: Номер страницы.
+    :return: Страницу companies.html.
+    """
+    companies_query = db.session.query(Companies).paginate(
+        page=page,
+        per_page=POSTS_PER_PAGE,
+        error_out=False
+    )
     if request.method == 'POST':
         search = request.form.get("comp_name")
         query = db.session.query(Companies).filter(
-            Companies.name.like(f'%{search}%')).paginate(page=page,
-                                                         per_page=POSTS_PER_PAGE,
-                                                         error_out=False)
+            Companies.name.like(f'%{search}%')).paginate(
+            page=page,
+            per_page=POSTS_PER_PAGE,
+            error_out=False
+        )
         return render_template('investing/companies.html', search=search,
                                query=query, current_page='/companies')
     return render_template('investing/companies.html', query=companies_query,
                            current_page='/companies')
 
 
-def get_formuls(ticker):
+def get_formuls(ticker: str) -> dict:
+    """
+    Получает значения формул для заданной компании.
+    :param ticker: Тикер компании.
+    :return: Словарь с значениями формул.
+    """
     formuls = {'P/E': Companies.market_price / Companies.net_profit,
                'P/S': Companies.market_price / Companies.sales,
                'P/B': Companies.market_price / Companies.assets,
@@ -96,7 +118,12 @@ def get_formuls(ticker):
 
 
 @app.route('/companies/<ticker>', methods=['GET', 'POST'])
-def company_info_page(ticker):
+def company_info_page(ticker: str):
+    """
+    Страница информации о компании.
+    :param ticker: Тикер компании.
+    :return: Страницу company_info.html
+    """
     query = Companies.query.filter_by(ticker=ticker).first()
     if query:
         if request.method == 'POST':
@@ -111,6 +138,10 @@ def company_info_page(ticker):
 
 @app.route('/create', methods=['GET', 'POST'])
 def create_comp_page():
+    """
+    Страница создания компании.
+    :return: Страницу create.html.
+    """
     form = CreateForm()
     if request.method == 'POST':
         if form.validate_on_submit():
@@ -132,6 +163,10 @@ def create_comp_page():
 
 @app.route('/update', methods=['GET', 'POST'])
 def update_page():
+    """
+    Страница выбора компании для обновления.
+    :return: Страницу update.html.
+    """
     form = ChoiceUpdateForm()
     companies = Companies.query.all()
     tickers = ['']
@@ -147,7 +182,12 @@ def update_page():
 
 
 @app.route('/update/<ticker>', methods=['GET', 'POST'])
-def update_comp_page(ticker):
+def update_comp_page(ticker: str):
+    """
+    Страница обновления информации о компании.
+    :param ticker: Тикер компании.
+    :return: Страницу update.html.
+    """
     form = UpdateForm()
     query = Companies.query.filter_by(ticker=ticker).first()
     if request.method == 'POST':
@@ -168,6 +208,10 @@ def update_comp_page(ticker):
 
 @app.route('/top', methods=['GET'])
 def top_comp_page():
+    """
+    Страница с топ-компаниями по различным показателям.
+    :return: Страницу top.html.
+    """
     query_nd_ebitda = db.session.query(Companies).order_by(
         desc(Companies.net_debt / Companies.ebitda)).limit(10).all()
     query_roe = db.session.query(Companies).order_by(

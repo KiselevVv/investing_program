@@ -1,14 +1,22 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileRequired, FileAllowed
-from wtforms import FileField, SubmitField, StringField, FloatField, \
-    SelectField
-from wtforms.validators import DataRequired, Length, Optional
+from wtforms import (FileField, SubmitField, StringField, FloatField,
+                     SelectField)
+from wtforms.validators import (DataRequired, Length, Optional)
 
 from web.validators import ticker_check, isalpha_check
 
 
 class MyFloatField(FloatField):
+    """
+    Класс для кастомного поля формы, преобразующего ввод в float.
+    """
     def process_formdata(self, valuelist):
+        """
+        Преобразует ввод пользователя в float.
+        :param valuelist: Список значений поля.
+        :return: ValueError: Если ввод не может быть преобразован в float.
+        """
         if valuelist:
             try:
                 self.data = float(valuelist[0])
@@ -18,6 +26,12 @@ class MyFloatField(FloatField):
 
 
 class UploadForm(FlaskForm):
+    """
+    Форма загрузки CSV файла.
+    attr:
+        csv_file (FileField): Поле для выбора файла.
+        submit (SubmitField): Кнопка отправки формы.
+    """
     csv_file = FileField('CSV файл', validators=[
         FileRequired(),
         FileAllowed(['csv'])
@@ -26,6 +40,24 @@ class UploadForm(FlaskForm):
 
 
 class CreateForm(FlaskForm):
+    """
+    Форма создания компании.
+
+    attr:
+        ticker (StringField): Поле для ввода тикера.
+        name (StringField): Поле для ввода имени компании.
+        sector (StringField): Поле для ввода сектора компании.
+        ebitda (MyFloatField): Поле для ввода EBITDA.
+        sales (MyFloatField): Поле для ввода продаж.
+        net_profit (MyFloatField): Поле для ввода чистой прибыли.
+        market_price (MyFloatField): Поле для ввода рыночной цены.
+        net_debt (MyFloatField): Поле для ввода чистого долга.
+        assets (MyFloatField): Поле для ввода активов.
+        equity (MyFloatField): Поле для ввода собственного капитала.
+        cash_equivalents (MyFloatField): Поле для ввода денежных эквивалентов.
+        liabilities (MyFloatField): Поле для ввода обязательств.
+        submit (SubmitField): Кнопка отправки формы.
+    """
     ticker = StringField(
         'ticker',
         validators=[DataRequired(),
@@ -96,11 +128,36 @@ class CreateForm(FlaskForm):
 
 
 class ChoiceUpdateForm(FlaskForm):
+    """
+    Форма выбора компании для обновления.
+
+    attr:
+        ticker (SelectField): Поле для выбора тикера компании.
+        submit (SubmitField): Кнопка отправки формы.
+    """
     ticker = SelectField('ticker', choices=[], validators=[DataRequired()])
     submit = SubmitField('Выбрать')
 
 
 class UpdateForm(FlaskForm):
+    """
+    Форма обновления информации о компании.
+
+    attr:
+        ticker (StringField): Поле для ввода тикера (только для чтения).
+        name (StringField): Поле для ввода имени компании.
+        sector (StringField): Поле для ввода сектора компании.
+        ebitda (MyFloatField): Поле для ввода EBITDA.
+        sales (MyFloatField): Поле для ввода продаж.
+        net_profit (MyFloatField): Поле для ввода чистой прибыли.
+        market_price (MyFloatField): Поле для ввода рыночной цены.
+        net_debt (MyFloatField): Поле для ввода чистого долга.
+        assets (MyFloatField): Поле для ввода активов.
+        equity (MyFloatField): Поле для ввода собственного капитала.
+        cash_equivalents (MyFloatField): Поле для ввода денежных эквивалентов.
+        liabilities (MyFloatField): Поле для ввода обязательств.
+        submit (SubmitField): Кнопка отправки формы.
+    """
     ticker = StringField(
         'ticker',
         validators=[DataRequired()],
