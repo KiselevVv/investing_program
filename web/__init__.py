@@ -6,7 +6,7 @@ import config
 
 app = Flask(__name__)
 app.config.from_object(
-    os.environ.get('FLASK_ENV') or 'config.DevelopmentConfig')
+    os.environ.get('FLASK_ENV') or 'config.ProductionConfig')
 
 db = SQLAlchemy(app)
 

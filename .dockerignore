@@ -1,0 +1,8 @@
+venv/
+.env
+csv/
+instance/
+.gitignore
+LICENSE
+README.md
+__pycache__
