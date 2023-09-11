@@ -46,6 +46,10 @@
 
 Тестовый csv файл находится в папке 'csv'
 
+Правильная структура файла необходима
+
+![](https://github.com/KiselevVv/investing_program/blob/main/csv/structure.svg)
+
 ## Автор:
 
 Киселев Влад
